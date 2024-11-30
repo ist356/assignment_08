@@ -1,0 +1,9 @@
+Take output from assignment 06 and visualize on a map
+
+enrich the dataset with more restaraunts of different types.
+
+only take one review to analyze for sentiment.
+
+`places.json`
+`placces-sentiment.json`
+
