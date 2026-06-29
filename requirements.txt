@@ -1,7 +1,11 @@
+jupyter
 streamlit
-matplotlib
-numpy
 pandas
+numpy
+matplotlib
+pytest
+
+# project-specific
 seaborn
 geopandas[all]
 mapclassify
