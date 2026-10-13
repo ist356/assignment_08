@@ -34,7 +34,6 @@ from saltcity import (
     haversine_km,
     make_choropleth,
     make_heatmap,
-    make_journey_map,
     make_shop_map,
     make_trend,
     make_violin,
@@ -44,7 +43,7 @@ from saltcity import (
     site_scores,
     zip_centers,
 )
-from saltcity.settings import DAY_NAMES, OPEN_HOURS
+from saltcity.settings import DAY_NAMES, OPEN_HOURS, REASON_COLORS
 
 
 @pytest.fixture(autouse=True)
@@ -167,6 +166,11 @@ def test_monthly_sales():
     assert rows[("2026-03", "Armory Square")] == (pytest.approx(16.20), 3)
     assert rows[("2026-04", "Westcott")] == (pytest.approx(3.25), 1)
     assert len(out) == 4, "one row per month and shop that has orders"
+    reasons = monthly_sales(classified(), by="reason")
+    assert list(reasons.columns[:4]) == ["month", "reason", "sales", "orders"], (
+        "with by='reason', the breakdown column is reason")
+    rows = {(r.month, r.reason): r.orders for r in reasons.itertuples()}
+    assert rows[("2026-03", "near home")] == 1 and rows[("2026-04", "near home")] == 1
 
 
 def test_members_by_zip():
@@ -218,6 +222,9 @@ def test_make_violin():
     assert isinstance(fig, plt.Figure), "make_violin should return the matplotlib Figure"
     labels = [t.get_text() for t in fig.axes[0].get_xticklabels()]
     assert sorted(labels) == sorted(frame["shop"].unique()), f"one violin per shop, got {labels}"
+    by_reason = make_violin(pd.concat([classified()] * 3, ignore_index=True), "reason")
+    labels = [t.get_text() for t in by_reason.axes[0].get_xticklabels()]
+    assert labels == REASONS, f"by='reason': one violin per reason, in settings.REASONS order — got {labels}"
 
 
 def test_make_trend():
@@ -226,6 +233,10 @@ def test_make_trend():
     assert all(trace.type == "scatter" for trace in fig.data), "make_trend should be a Plotly line chart"
     names = {trace.name for trace in fig.data}
     assert names == {"Armory Square", "Westcott", "University Hill"}
+    by_reason = make_trend(monthly_sales(classified(), "reason"), "reason", "orders")
+    assert {trace.name for trace in by_reason.data} == set(REASONS), "one line per reason"
+    assert by_reason.data[0].line.color == REASON_COLORS[by_reason.data[0].name], (
+        "each reason keeps its color from settings.REASON_COLORS")
 
 
 def test_make_shop_map():
@@ -236,16 +247,6 @@ def test_make_shop_map():
     radii = sorted(c.options["radius"] for c in fmap._children.values() if type(c) is folium.CircleMarker)
     assert radii[-1] == pytest.approx(24) and radii[0] < radii[-1], (
         "radius = 6 + 18 x revenue / the largest revenue: the busiest shop gets 24")
-
-
-def test_make_journey_map():
-    fmap = make_journey_map(classified(), 1)
-    assert count_kind(fmap, folium.Marker) == 2, "Home and Work markers"
-    assert count_kind(fmap, folium.PolyLine) == 1, "one line from home to work"
-    assert count_kind(fmap, folium.CircleMarker) == 3, "member 1: Armory Square for three reasons"
-    nohome = make_journey_map(classified(), 2)
-    assert count_kind(nohome, folium.Marker) == 1 and count_kind(nohome, folium.PolyLine) == 0, (
-        "member 2 has no Work: just Home, no line")
 
 
 def test_make_choropleth():

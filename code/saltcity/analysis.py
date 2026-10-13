@@ -56,15 +56,18 @@ def reason_table(visits: pd.DataFrame, shop: str | None = None) -> pd.DataFrame:
     pass
 
 
-def monthly_sales(orders: pd.DataFrame) -> pd.DataFrame:
-    """Sales per shop per month: columns `month` ("2025-11" ...), `shop`, `sales`
-    (sum of `total`, rounded to cents) and `orders` (count), sorted by month then
-    shop.
+def monthly_sales(orders: pd.DataFrame, by: str = "shop") -> pd.DataFrame:
+    """Sales per month, broken down by the column `by`: columns `month`
+    ("2025-11" ...), `by`, `sales` (sum of `total`, rounded to cents) and `orders`
+    (count), sorted by month then `by`.
+
+        monthly_sales(orders)                  one row per month and shop
+        monthly_sales(visits, by="reason")     one row per month and visit reason
 
     How to build it:
 
     - `month` <- `timestamp.dt.strftime("%Y-%m")`.
-    - `groupby(["month", "shop"])` and `.agg(sales=("total", "sum"),
+    - `groupby(["month", by])` and `.agg(sales=("total", "sum"),
       orders=("order_id", "count"))`, then `reset_index()`.
     """
     # TODO: your code here

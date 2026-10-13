@@ -17,7 +17,6 @@ from saltcity import (
     demand_by_zip,
     make_choropleth,
     make_heatmap,
-    make_journey_map,
     make_shop_map,
     make_trend,
     make_violin,
@@ -56,7 +55,7 @@ from saltcity import (
 #       by make_heatmap with a title naming the choice. Show a matplotlib Figure
 #       with st.pyplot(fig), then close(fig) to free it.
 #    c. Two columns: make_trend(monthly_sales(orders)) with st.plotly_chart, and
-#       make_violin(orders) with st.pyplot (and close).
+#       make_violin(orders) with st.pyplot (and close) — both broken down by shop.
 #
 # 4. WHY THEY COME  (if why.open: / with why:)
 #    a. choice <- st.selectbox("Shop", ["All shops"] + our_shops, key="why_shop"),
@@ -66,11 +65,10 @@ from saltcity import (
 #       with no visits still shows 0), side by side in st.columns.
 #    c. make_heatmap(reason_table(visits, the shop or None), a title naming the
 #       choice) — your classifier's eye test.
-#    d. member <- st.selectbox("Follow one member", the 40 customer_ids with the
-#       most visits in `shown`, key="member")
-#       st_folium(make_journey_map(visits, member), height=450,
-#                 use_container_width=True, returned_objects=[], key="journey")
-#       (returned_objects=[] means the page does not rerun when someone pans the map.)
+#    d. Two columns, the same charts as step 3c but broken down by reason, for
+#       the visits in `shown`:
+#       make_trend(monthly_sales(shown, "reason"), "reason", "orders") with
+#       st.plotly_chart, and make_violin(shown, "reason") with st.pyplot (and close).
 #
 # 5. WHERE WE ARE  (if where.open: / with where:)
 #    st_folium(make_shop_map(shops, orders), ...) the same way, key="shops".

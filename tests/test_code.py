@@ -133,7 +133,6 @@ def test_each_chart_uses_its_library():
         "make_violin": {"violinplot"},
         "make_trend": {"line"},
         "make_shop_map": {"Map", "CircleMarker", "Marker"},
-        "make_journey_map": {"Map", "Marker", "PolyLine", "CircleMarker"},
         "make_choropleth": {"choropleth_map"},
     }
     for name, needed in expect.items():
@@ -151,7 +150,7 @@ def test_dashboard_assembles_the_package():
     needed = {"run", "tabs", "selectbox", "pyplot", "plotly_chart", "st_folium", "metric",
               "success", "dataframe", "busy_table", "reason_table", "monthly_sales",
               "members_by_zip", "demand_by_zip", "site_scores", "make_heatmap", "make_violin",
-              "make_trend", "make_shop_map", "make_journey_map", "make_choropleth"}
+              "make_trend", "make_shop_map", "make_choropleth"}
     missing = needed - called
     assert not missing, f"{DASHBOARD} should call {sorted(missing)}"
     assert not called & {"groupby", "pivot_table", "sjoin", "heatmap", "violinplot", "merge",

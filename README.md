@@ -36,7 +36,7 @@ By the end of this assignment you will be able to:
 
 1. **Make a heatmap and a violin plot** with seaborn, and say what each one shows that a table doesn't
 2. **Make an interactive chart** with Plotly, and show it in Streamlit
-3. **Put data on a map** with Folium: markers, circles sized by a value, lines, popups
+3. **Put data on a map** with Folium: markers, circles sized by a value, popups
 4. **Work with geographic data** in GeoPandas: points from latitude/longitude, a **spatial join** (which polygon is each point in?), projections and centroids
 5. **Draw a choropleth** that colors each ZIP code by a value
 6. **Engineer features** (distance, detour, time of day) and **write a rule-based classifier**, then improve it against a validation set you can't see
@@ -104,7 +104,7 @@ local dev container (**Option B**).
 
 1. Create `.env` with your API key ([Reference #1](#1-how-do-i-set-up-my-api-key)).
 2. Open the **Testing** panel and run the tests ([Reference #11](#11-how-do-i-run-automated-tests)).
-   You should see **0 passing and 39 failing** — every test is about a function or page
+   You should see **0 passing and 37 failing** — every test is about a function or page
    you haven't written yet.
 
 ---
@@ -226,7 +226,7 @@ visits it anchors, **halved** when a rival is within 2.5 km. The numbers are in
 | 2 | `add_features` | `test_unit.py -k features` |
 | 3 | `classify_visits` — then score it, improve it, score again | `test_unit.py -k classify`, `test_pipeline.py -k classifier` |
 | 4 | `busy_table`, `reason_table`, `monthly_sales`, `members_by_zip`, `add_anchor_zip`, `demand_by_zip`, `site_scores` | `test_unit.py -k "table or sales or members or anchor or site"` |
-| 5 | `make_heatmap`, `make_violin`, `make_trend`, `make_shop_map`, `make_journey_map`, `make_choropleth` | `test_unit.py -k make` |
+| 5 | `make_heatmap`, `make_violin`, `make_trend`, `make_shop_map`, `make_choropleth` | `test_unit.py -k make` |
 | 6 | `dashboard.py` | `test_pipeline.py -k dashboard` |
 | 7 | *(structure checks go green along the way)* | `test_code.py` |
 | 8 | `reflection.txt` | — |
@@ -268,12 +268,13 @@ To pass, your reasons must agree with the survey on **at least 85%** of visits o
 Thoughtful rules get past 90%.
 
 **The eye test.** Numbers aren't the only check. Once the dashboard draws the
-*Visits by reason and hour* heatmap and the journey map, look at them:
+*Why they come* tab — the reason-by-hour heatmap, the monthly lines and the violins — look at them:
 
 - [ ] "on the way to work" visits are in the morning, "on the way home" in the late afternoon
 - [ ] "during work" visits are at shops near where those members work
 - [ ] "near home" visits cluster on weekends and evenings — and at the shop nearest home
-- [ ] following a commuter on the journey map, their stops sit on the line from home to work
+- [ ] pick University Hill: "near home" visits (students) drop in the summer months
+- [ ] pick Westcott: "near home" orders have the long tail of big weekend brunch totals
 - [ ] nothing is "on the way to work" for a member who has no Work
 
 If a chart surprises you, find a visit that looks wrong and ask why your rules labeled it
@@ -288,7 +289,7 @@ you build on them.
 ### Step 6 — Part 3: the tables (`analysis.py`)
 
 Each function returns the small table one chart needs. `busy_table` and `reason_table` are
-`pivot_table`s; `monthly_sales` is a `groupby`; `members_by_zip` and `demand_by_zip` count
+`pivot_table`s; `monthly_sales` is a `groupby` (by shop, or by any column you name, such as `reason`); `members_by_zip` and `demand_by_zip` count
 ZIPs; `site_scores` puts it all together ([About the data](#from-reasons-to-a-place)).
 
 ### Step 7 — Part 3: the charts (`charts.py`)
@@ -392,7 +393,6 @@ st.plotly_chart(fig)
 fmap = folium.Map(location=[43.06, -76.14], zoom_start=12)
 folium.Marker([lat, lon], tooltip="Home", icon=folium.Icon(color="green", icon="home")).add_to(fmap)
 folium.CircleMarker([lat, lon], radius=12, color="green", fill=True, popup="...").add_to(fmap)
-folium.PolyLine([[lat1, lon1], [lat2, lon2]], dash_array="6").add_to(fmap)
 ```
 
 Locations are `[latitude, longitude]` — the opposite order from GeoPandas' x/y. A

@@ -5,7 +5,7 @@ Returning the chart (instead of drawing it on the page) keeps the dashboard shor
 and lets the tests look inside each one: how many cells, traces or markers it has.
 
     seaborn / matplotlib (Lesson 6-1)   make_heatmap, make_violin   -> Figure
-    Folium (Lesson 6-2)                 make_shop_map, make_journey_map -> folium.Map
+    Folium (Lesson 6-2)                 make_shop_map               -> folium.Map
     Plotly (Lesson 6-3)                 make_trend                  -> plotly Figure
     choropleth (Lesson 6-4)             make_choropleth             -> plotly Figure
 """
@@ -35,22 +35,32 @@ def make_heatmap(table: pd.DataFrame, title: str) -> Figure:
     pass
 
 
-def make_violin(orders: pd.DataFrame) -> Figure:
-    """Violins of order `total` by `shop` — how much people spend at each shop.
+def make_violin(frame: pd.DataFrame, by: str = "shop") -> Figure:
+    """Violins of order `total`, one per value of the column `by` — how much
+    people spend at each shop (`by="shop"`), or on each kind of visit
+    (`by="reason"`).
 
-    `sns.violinplot(data=orders, x="shop", y="total", ax=ax, cut=0)`; `cut=0`
-    keeps each violin inside the real range of totals. Title it, label the y axis
+    `sns.violinplot(data=frame, x=by, y="total", order=..., ax=ax, cut=0)`;
+    `cut=0` keeps each violin inside the real range of totals. For reasons, put
+    them in settings.REASONS order (leave out any with no visits); otherwise sort
+    the values. Title it "What an order comes to, by <by>", label the y axis
     "Order total ($)", return the Figure.
     """
     # TODO: your code here
     pass
 
 
-def make_trend(monthly: pd.DataFrame) -> go.Figure:
-    """An interactive line chart of monthly `sales`, one line per shop.
+def make_trend(monthly: pd.DataFrame, by: str = "shop",
+               value: str = "sales") -> go.Figure:
+    """An interactive line chart of `value` by month, one line per value of `by`.
 
-    `px.line(monthly, x="month", y="sales", color="shop", markers=True,
-    title=...)`; hovering shows each month's numbers.
+        make_trend(monthly_sales(orders))                         sales per shop
+        make_trend(monthly_sales(visits, "reason"), "reason", "orders")
+                                                         visits per visit reason
+
+    `px.line(monthly, x="month", y=value, color=by, markers=True, title=...)`;
+    hovering shows each month's numbers. For reasons, also pass
+    `color_discrete_map=settings.REASON_COLORS` so each reason keeps its color.
     """
     # TODO: your code here
     pass
@@ -67,28 +77,6 @@ def make_shop_map(shops: pd.DataFrame, orders: pd.DataFrame) -> folium.Map:
     - Each rival: a red `folium.Marker` (`icon=folium.Icon(color="red")`) with its
       name as the popup.
     - `tooltip=` the shop's name on every marker.
-    """
-    # TODO: your code here
-    pass
-
-
-def make_journey_map(visits: pd.DataFrame, customer_id: int) -> folium.Map:
-    """One member's day on a map: home, work, the trip between them, and where
-    they bought coffee — colored by why (settings.REASON_COLORS).
-
-    `visits` has your `reason` column. The map shows:
-
-    - a green Marker at Home (`icon=folium.Icon(color="green", icon="home")`);
-    - when the member has Work: a blue Marker there
-      (`icon=folium.Icon(color="blue", icon="briefcase")`) and a dashed
-      `folium.PolyLine` from home to work (`dash_array="6"`);
-    - one `folium.CircleMarker` for each (shop, reason) the member has visits for,
-      at the shop, colored by the reason, radius `5 + number of visits` (at most
-      25), popup "Westcott — on the way to work: 23 visits". Circles for the same
-      shop are nudged apart (add `0.0004 * position of the reason in
-      settings.REASONS` to the longitude) so none hides another.
-
-    The map is centered on the member's home, `zoom_start=12`.
     """
     # TODO: your code here
     pass

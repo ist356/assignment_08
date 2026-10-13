@@ -2,7 +2,7 @@ Write your reflection here.
 
 See reflection.md for what makes a good reflection — be specific, use the
 terminology from this assignment (heatmap, violin plot, interactive chart, hover,
-Folium marker, popup, polyline, choropleth, GeoJSON, polygon, spatial join,
+Folium marker, popup, choropleth, GeoJSON, polygon, spatial join,
 point-in-polygon, coordinate reference system, projection, centroid, haversine
 distance, feature engineering, rule-based classification, validation set,
 agreement, anchor, site score), and make it actionable.
