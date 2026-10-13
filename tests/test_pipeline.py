@@ -119,6 +119,16 @@ def test_dashboard_shop_picker():
     no_exception(app, DASHBOARD)
 
 
+def test_dashboard_why_shop_picker():
+    app = load_app(DASHBOARD)
+    picker = next((box for box in app.selectbox if box.key == "why_shop"), None)
+    assert picker is not None, "a st.selectbox with key='why_shop' on the Why they come tab"
+    picker.select("University Hill").run()
+    no_exception(app, DASHBOARD)
+    total = sum(int(str(m.value).replace(",", "")) for m in app.metric)
+    assert 0 < total < 36067, "with one shop picked, the metrics count only that shop's visits"
+
+
 def test_dashboard_member_picker():
     app = load_app(DASHBOARD)
     picker = next((box for box in app.selectbox if box.key == "member"), None)

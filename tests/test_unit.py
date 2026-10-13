@@ -155,6 +155,9 @@ def test_reason_table():
     assert list(out.index) == REASONS and list(out.columns) == OPEN_HOURS
     assert out.loc["on the way to work", 7] == 1 and out.loc["on the way home", 17] == 1
     assert int(out.to_numpy().sum()) == 6
+    only = reason_table(classified(), "Westcott")
+    assert int(only.to_numpy().sum()) == 2 and only.loc["near home", 10] == 1, (
+        "with a shop, only that shop's visits count")
 
 
 def test_monthly_sales():

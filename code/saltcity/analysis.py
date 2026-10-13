@@ -44,9 +44,10 @@ def busy_table(orders: pd.DataFrame, shop: str | None = None) -> pd.DataFrame:
     pass
 
 
-def reason_table(visits: pd.DataFrame) -> pd.DataFrame:
+def reason_table(visits: pd.DataFrame, shop: str | None = None) -> pd.DataFrame:
     """Visits by reason (rows, in settings.REASONS order) and hour (columns,
-    settings.OPEN_HOURS) — the "eye test" for your classifier.
+    settings.OPEN_HOURS) — the "eye test" for your classifier. With `shop`, only
+    that shop's visits count.
 
     Built like busy_table, with `reason` instead of the day and `hour` truncated
     to a whole number (`.astype(int)`).

@@ -11,6 +11,7 @@ from streamlit_folium import st_folium
 
 from pipeline import run
 from saltcity import (
+    REASONS,
     busy_table,
     close,
     demand_by_zip,
@@ -51,12 +52,15 @@ from saltcity import (
 #       make_violin(orders) with st.pyplot (and close).
 #
 # 4. WHY THEY COME
-#    a. One st.metric per reason: how many visits got it
-#       (visits["reason"].value_counts()), side by side in st.columns.
-#    b. make_heatmap(reason_table(visits), "Visits by reason and hour") — your
-#       classifier's eye test.
-#    c. member <- st.selectbox("Follow one member", the 40 customer_ids with the
-#       most visits, key="member")
+#    a. choice <- st.selectbox("Shop", ["All shops"] + our_shops, key="why_shop"),
+#       just like step 3. shown <- the visits at that shop (or all of them).
+#    b. One st.metric per reason, in settings.REASONS order: how many of `shown`
+#       got it (value_counts(), then .reindex(REASONS, fill_value=0) so a reason
+#       with no visits still shows 0), side by side in st.columns.
+#    c. make_heatmap(reason_table(visits, the shop or None), a title naming the
+#       choice) — your classifier's eye test.
+#    d. member <- st.selectbox("Follow one member", the 40 customer_ids with the
+#       most visits in `shown`, key="member")
 #       st_folium(make_journey_map(visits, member), height=450,
 #                 use_container_width=True, returned_objects=[], key="journey")
 #       (returned_objects=[] means the page does not rerun when someone pans the map.)

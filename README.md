@@ -104,7 +104,7 @@ local dev container (**Option B**).
 
 1. Create `.env` with your API key ([Reference #1](#1-how-do-i-set-up-my-api-key)).
 2. Open the **Testing** panel and run the tests ([Reference #11](#11-how-do-i-run-automated-tests)).
-   You should see **0 passing and 36 failing** — every test is about a function or page
+   You should see **0 passing and 37 failing** — every test is about a function or page
    you haven't written yet.
 
 ---
