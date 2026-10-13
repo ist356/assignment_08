@@ -6,7 +6,7 @@
     {
       "id": "test_unit.py",
       "name": "Unit Tests",
-      "description": "Tests in test_unit.py — every function on a small hand-made example you can check by hand (three members, six orders, three square ZIP codes): the spatial join (add_zips, zip_centers), the features (add_features), your classifier's contract and six textbook visits, the tables (busy_table, reason_table, monthly_sales, members_by_zip, add_anchor_zip, demand_by_zip) and the site score; and each chart builder, by looking inside what it returns (heatmap cells, violins, Plotly traces, Folium markers, choropleth values).",
+      "description": "Tests in test_unit.py — every function on a small hand-made example you can check by hand (three members, six orders, three square ZIP codes): the spatial join (add_zips, zip_centers), your classifier's contract and six textbook visits, and the tables (busy_table, reason_table, monthly_sales, members_by_zip, add_anchor_zip, demand_by_zip); and each chart builder, by looking inside what it returns (heatmap cells, violins, Plotly traces, Folium markers, choropleth values).",
       "judge": "auto",
       "max": 2,
       "metric": "ratio",
@@ -34,7 +34,7 @@
     {
       "id": "test_pipeline.py",
       "name": "Pipeline & App Tests",
-      "description": "Tests in test_pipeline.py — the whole year of data: every member placed in a ZIP, a visit per order, your classifier scored by the CENT portal against the survey (at least 85% agreement overall and 60% for every reason), the tables on all orders, the decision (shop #4 goes to 13057), and the dashboard driven with AppTest (title, four tabs, the shop and member pickers, the metrics, the maps and the winner).",
+      "description": "Tests in test_pipeline.py — the whole year of data: every member placed in a ZIP, a visit per order, your classifier scored by the CENT portal against the survey (at least 85% agreement overall and 60% for every reason), the tables on all orders, the decision (shop #4 goes to 13057), and the dashboard driven with AppTest (title, four tabs, the shop pickers, the metrics, the maps and the winner).",
       "judge": "auto",
       "max": 3,
       "metric": "ratio",
@@ -68,7 +68,7 @@
     {
       "id": "test_code.py",
       "name": "Code Structure Tests",
-      "description": "Tests in test_code.py — the source is parsed and checked for how it is built: the ZIPs come from a GeoPandas spatial join and centers from a projected centroid; the features merge and use haversine_km on whole columns; the classifier uses both time and distance; the tables use pivot_table, groupby and merge, not loops; each chart uses its lesson's library (seaborn heatmap and violinplot, Plotly line and choropleth_map, Folium Map, Marker and CircleMarker); the dashboard assembles the package.",
+      "description": "Tests in test_code.py — the source is parsed and checked for how it is built: the ZIPs come from a GeoPandas spatial join and centers from a projected centroid; the classifier uses both time and distance; the tables use pivot_table, groupby and merge, not loops; each chart uses its lesson's library (seaborn heatmap and violinplot, Plotly line and choropleth_map, Folium Map, Marker and CircleMarker); the dashboard assembles the package.",
       "judge": "auto",
       "max": 2,
       "metric": "ratio",

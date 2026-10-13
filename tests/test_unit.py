@@ -31,7 +31,6 @@ from saltcity import (
     busy_table,
     classify_visits,
     demand_by_zip,
-    haversine_km,
     make_choropleth,
     make_heatmap,
     make_shop_map,
@@ -40,7 +39,6 @@ from saltcity import (
     members_by_zip,
     monthly_sales,
     reason_table,
-    site_scores,
     zip_centers,
 )
 from saltcity.settings import DAY_NAMES, OPEN_HOURS, REASON_COLORS
@@ -55,6 +53,14 @@ def close_figures():
 def visits(with_zips: bool = False) -> pd.DataFrame:
     customers = add_zips(CUSTOMERS, squares()) if with_zips else CUSTOMERS
     return add_features(orders(), customers, SHOPS)
+
+
+def labeled() -> pd.DataFrame:
+    """The six visits with their obvious reasons already filled in — so the table
+    and chart tests don't depend on your classifier."""
+    frame = visits(with_zips=True)
+    frame["reason"] = frame["order_id"].map(obvious_reasons())
+    return frame
 
 
 def classified() -> pd.DataFrame:
@@ -84,35 +90,6 @@ def test_zip_centers():
     center = out.set_index("zip").loc["10001"]
     assert center["lat"] == pytest.approx(43.05, abs=0.002), "10001's center should be near latitude 43.05"
     assert center["lon"] == pytest.approx(-76.15, abs=0.002), "10001's center should be near longitude -76.15"
-
-
-# --- features.py ----------------------------------------------------------------------
-
-
-def test_add_features_columns_and_order():
-    handed = orders()
-    before = snapshot(handed)
-    out = add_features(handed, CUSTOMERS, SHOPS)
-    assert_unmodified(handed, before, "add_features")
-    needed = {"home_lat", "home_lon", "work_lat", "work_lon", "shop_lat", "shop_lon",
-              "hour", "weekday", "has_work", "d_home", "d_work", "detour"}
-    missing = needed - set(out.columns)
-    assert not missing, f"add_features is missing columns {sorted(missing)}"
-    assert list(out["order_id"]) == list(handed["order_id"]), "add_features should keep the orders' rows and order"
-
-
-def test_add_features_values():
-    out = visits().set_index("order_id")
-    assert out.loc[1, "hour"] == pytest.approx(7.5), "7:30 a.m. should be hour 7.5"
-    assert out.loc[3, "hour"] == pytest.approx(17 + 10 / 60), "5:10 p.m. should be hour 17.1667"
-    assert bool(out.loc[1, "weekday"]) and not bool(out.loc[4, "weekday"]), "Tuesday is a weekday; Saturday is not"
-    assert bool(out.loc[1, "has_work"]) and not bool(out.loc[4, "has_work"]), "member 2 has no saved Work"
-    want = haversine_km(43.039, -76.112, 43.0405, -76.1185)
-    assert out.loc[4, "d_home"] == pytest.approx(want, abs=0.01), "d_home: km from home to the shop"
-    assert out.loc[1, "d_work"] == pytest.approx(haversine_km(43.049, -76.152, 43.0480, -76.1545), abs=0.01)
-    assert out.loc[1, "detour"] < 0.6, "Armory Square is right on member 1's way downtown: a small detour"
-    assert out.loc[5, "detour"] > 5, "University Hill is far off member 3's commute: a big detour"
-    assert pd.isna(out.loc[4, "d_work"]) and pd.isna(out.loc[4, "detour"]), "no Work: d_work and detour are missing"
 
 
 # --- classify.py ----------------------------------------------------------------------
@@ -150,11 +127,11 @@ def test_busy_table():
 
 
 def test_reason_table():
-    out = reason_table(classified())
+    out = reason_table(labeled())
     assert list(out.index) == REASONS and list(out.columns) == OPEN_HOURS
     assert out.loc["on the way to work", 7] == 1 and out.loc["on the way home", 17] == 1
     assert int(out.to_numpy().sum()) == 6
-    only = reason_table(classified(), "Westcott")
+    only = reason_table(labeled(), "Westcott")
     assert int(only.to_numpy().sum()) == 2 and only.loc["near home", 10] == 1, (
         "with a shop, only that shop's visits count")
 
@@ -166,7 +143,7 @@ def test_monthly_sales():
     assert rows[("2026-03", "Armory Square")] == (pytest.approx(16.20), 3)
     assert rows[("2026-04", "Westcott")] == (pytest.approx(3.25), 1)
     assert len(out) == 4, "one row per month and shop that has orders"
-    reasons = monthly_sales(classified(), by="reason")
+    reasons = monthly_sales(labeled(), by="reason")
     assert list(reasons.columns[:4]) == ["month", "reason", "sales", "orders"], (
         "with by='reason', the breakdown column is reason")
     rows = {(r.month, r.reason): r.orders for r in reasons.itertuples()}
@@ -181,7 +158,7 @@ def test_members_by_zip():
 
 
 def test_add_anchor_zip_and_demand():
-    handed = classified()
+    handed = labeled()
     out = add_anchor_zip(handed).set_index("order_id")["anchor_zip"]
     assert out[1] == "10001" and out[2] == "10001", "workday visits anchor to the WORK ZIP"
     assert out[4] == "10001", "near-home visits anchor to the HOME ZIP"
@@ -189,19 +166,6 @@ def test_add_anchor_zip_and_demand():
     demand = demand_by_zip(handed)
     assert list(demand.columns) == ["zip", "visits"]
     assert demand.to_dict("records") == [{"zip": "10001", "visits": 5}]
-
-
-def test_site_scores():
-    demand = pd.DataFrame({"zip": ["10001", "10002", "10003"], "visits": [100, 60, 40]})
-    out = site_scores(demand, squares(), SHOPS)
-    assert list(out.columns) == ["zip", "visits", "ours_km", "rival_km", "served", "score", "rank"]
-    rows = out.set_index("zip")
-    assert bool(rows.loc["10001", "served"]), "10001's center is next to Armory Square: served"
-    assert rows.loc["10001", "score"] == 0, "a served ZIP scores 0"
-    assert rows.loc["10002", "score"] == pytest.approx(30), "Lakeshore Lattes is in 10002: 60 visits x 0.5"
-    assert rows.loc["10003", "score"] == pytest.approx(40), "10003 has no shop and no rival nearby: 40"
-    assert list(out["zip"]) == ["10003", "10002", "10001"] and list(out["rank"]) == [1, 2, 3], (
-        "best first, rank 1 to 3")
 
 
 # --- charts.py ------------------------------------------------------------------------
@@ -222,7 +186,7 @@ def test_make_violin():
     assert isinstance(fig, plt.Figure), "make_violin should return the matplotlib Figure"
     labels = [t.get_text() for t in fig.axes[0].get_xticklabels()]
     assert sorted(labels) == sorted(frame["shop"].unique()), f"one violin per shop, got {labels}"
-    by_reason = make_violin(pd.concat([classified()] * 3, ignore_index=True), "reason")
+    by_reason = make_violin(pd.concat([labeled()] * 3, ignore_index=True), "reason")
     labels = [t.get_text() for t in by_reason.axes[0].get_xticklabels()]
     assert labels == REASONS, f"by='reason': one violin per reason, in settings.REASONS order — got {labels}"
 
@@ -233,7 +197,7 @@ def test_make_trend():
     assert all(trace.type == "scatter" for trace in fig.data), "make_trend should be a Plotly line chart"
     names = {trace.name for trace in fig.data}
     assert names == {"Armory Square", "Westcott", "University Hill"}
-    by_reason = make_trend(monthly_sales(classified(), "reason"), "reason", "orders")
+    by_reason = make_trend(monthly_sales(labeled(), "reason"), "reason", "orders")
     assert {trace.name for trace in by_reason.data} == set(REASONS), "one line per reason"
     assert by_reason.data[0].line.color == REASON_COLORS[by_reason.data[0].name], (
         "each reason keeps its color from settings.REASON_COLORS")

@@ -15,7 +15,6 @@ import ast
 from helpers import repo_path
 
 GEO = "code/saltcity/geo.py"
-FEATURES = "code/saltcity/features.py"
 CLASSIFY = "code/saltcity/classify.py"
 ANALYSIS = "code/saltcity/analysis.py"
 CHARTS = "code/saltcity/charts.py"
@@ -84,14 +83,6 @@ def test_zips_come_from_a_spatial_join():
         f"{GEO}: zip_centers should project with .to_crs(...) and take the .centroid")
 
 
-def test_features_use_merge_and_haversine():
-    found = called_names(function(parse(FEATURES), "add_features"))
-    assert "merge" in found and "haversine_km" in found, (
-        f"{FEATURES}: add_features should merge the tables and measure with haversine_km")
-    assert not loops(function(parse(FEATURES), "add_features")), (
-        f"{FEATURES}: add_features should work on whole columns, not loop over rows")
-
-
 def test_classifier_uses_time_and_distance():
     tree = function(parse(CLASSIFY), "classify_visits")
     used = strings(tree) | attributes(tree)
@@ -115,11 +106,8 @@ def test_tables_use_pandas():
         f"{ANALYSIS}: monthly_sales should use groupby")
     assert "add_anchor_zip" in called_names(function(tree, "demand_by_zip")), (
         f"{ANALYSIS}: demand_by_zip should call add_anchor_zip()")
-    scores = called_names(function(tree, "site_scores"))
-    assert {"zip_centers", "haversine_km"} <= scores, (
-        f"{ANALYSIS}: site_scores should use zip_centers() and haversine_km()")
     for name in ("busy_table", "reason_table", "monthly_sales", "members_by_zip",
-                 "add_anchor_zip", "demand_by_zip", "site_scores"):
+                 "add_anchor_zip", "demand_by_zip"):
         assert not loops(function(tree, name)), f"{ANALYSIS}: {name} should use pandas, not a for/while loop"
 
 

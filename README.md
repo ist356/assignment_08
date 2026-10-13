@@ -21,10 +21,10 @@ whether Clay is the right answer.
 This is Unit 6 in one assignment: seaborn heatmaps and violins (6-1), Folium maps
 (6-2), interactive Plotly charts (6-3), and GeoPandas with choropleths (6-4).
 
-> **Plan for 6–12 hours, depending on your skill set, and start early.** Most of the
+> **Plan for 6–10 hours, depending on your skill set, and start early.** Most of the
 > functions are short and the charts are a few lines each. The part that takes time
-> is the classifier: there is no single right answer, so you will try rules, score
-> them, look at what they get wrong, and try again. That loop *is* the assignment.
+> is the classifier: there is no single right answer, so you will start from a
+> baseline, score it, look at what it gets wrong, and try again. That loop *is* the assignment.
 > Commit after each part and submit early — GraderThan's feedback tells you which part
 > to fix before you build on it.
 
@@ -48,11 +48,11 @@ By the end of this assignment you will be able to:
   - `saltcity/` — the package
     - `__init__.py`, `settings.py`, `data.py`, `scorer.py` — **provided.** The public API; names, paths and numbers; loading the data; talking to the scorer
     - `geo.py` — **Part 1, you write this.** Which ZIP is each point in? (`haversine_km` is provided)
-    - `features.py` — **Part 1, you write this.** Each order becomes a visit with features
-    - `classify.py` — **Part 2, you design this.** Why did each visit happen?
-    - `analysis.py` — **Part 3, you write this.** The tables behind the charts, and the site score
+    - `features.py` — **provided.** Each order becomes a visit with features (read it: your rules use these columns)
+    - `classify.py` — **Part 2, you design this.** Why did each visit happen? (you start from a working baseline)
+    - `analysis.py` — **Part 3, you write this.** The tables behind the charts (`site_scores` is provided)
     - `charts.py` — **Part 3, you write this.** Every chart, returned by a function
-  - `dashboard.py` — **Part 4, you write this** (a step-by-step algorithm is in the file)
+  - `dashboard.py` — **Part 4: two of its four tabs are provided; you write the other two** (a step-by-step algorithm is in the file)
   - `pipeline.py` — **provided.** Loads the data and runs every step once (cached for the dashboard)
   - `check_score.py` — **provided.** Sends your reasons to the scorer and prints how they did
   - `explore.py` — **provided.** Runs everything one step at a time so you can debug it
@@ -64,9 +64,9 @@ By the end of this assignment you will be able to:
 - `.devcontainer/`, `.streamlit/`, `.vscode/` — container, Streamlit and editor configuration
 - `README.md`, `reflection.md`, `rubric.json`, `requirements.txt`, `ruff.toml` — these instructions, reflection guidance, grading, dependencies, style rules
 
-You write **seventeen functions** across five files — most are under ten lines and
-come with a **How to build it** — one **classifier** you design yourself, and the
-**dashboard**.
+You write **fourteen functions** across three files — most are under ten lines and
+come with a **How to build it** — improve a **classifier** you design yourself, and
+write **two dashboard tabs**.
 
 ### Prerequisites
 
@@ -104,7 +104,7 @@ local dev container (**Option B**).
 
 1. Create `.env` with your API key ([Reference #1](#1-how-do-i-set-up-my-api-key)).
 2. Open the **Testing** panel and run the tests ([Reference #11](#11-how-do-i-run-automated-tests)).
-   You should see **0 passing and 37 failing** — every test is about a function or page
+   You should see **0 passing and 33 failing** — every test is about a function or page
    you haven't written yet.
 
 ---
@@ -213,23 +213,22 @@ visits it anchors, **halved** when a rival is within 2.5 km. The numbers are in
 
 | file | what you get |
 | --- | --- |
-| `geo.py`, `features.py`, `analysis.py`, `charts.py` | the contract, and a **How to build it** for most functions |
-| `classify.py` | the five reasons and the contract. **The rules are yours.** |
-| `dashboard.py` | the imports, then the page's algorithm as numbered comments |
-| `pipeline.py`, `check_score.py`, `explore.py`, `scorer.py` | provided whole — read them, run them |
+| `geo.py`, `analysis.py`, `charts.py` | the contract, and a **How to build it** for most functions |
+| `classify.py` | the five reasons, the contract, and a **baseline** that uses only the clock (about 76%). **The better rules are yours.** |
+| `dashboard.py` | the heading, the data, the tabs, and two finished tabs (*When we're busy*, *Where we are*); the other two tabs as numbered comments |
+| `features.py`, `site_scores`, `pipeline.py`, `check_score.py`, `explore.py`, `scorer.py` | provided whole — read them, run them |
 
 ### Build order at a glance
 
 | order | write this | turns green |
 | --- | --- | --- |
 | 1 | `points_in_zips`, `add_zips`, `zip_centers` | `test_unit.py -k "zips or centers"` |
-| 2 | `add_features` | `test_unit.py -k features` |
-| 3 | `classify_visits` — then score it, improve it, score again | `test_unit.py -k classify`, `test_pipeline.py -k classifier` |
-| 4 | `busy_table`, `reason_table`, `monthly_sales`, `members_by_zip`, `add_anchor_zip`, `demand_by_zip`, `site_scores` | `test_unit.py -k "table or sales or members or anchor or site"` |
-| 5 | `make_heatmap`, `make_violin`, `make_trend`, `make_shop_map`, `make_choropleth` | `test_unit.py -k make` |
-| 6 | `dashboard.py` | `test_pipeline.py -k dashboard` |
-| 7 | *(structure checks go green along the way)* | `test_code.py` |
-| 8 | `reflection.txt` | — |
+| 2 | `classify_visits` — score the baseline, improve it, score again | `test_unit.py -k classify`, `test_pipeline.py -k classifier` |
+| 3 | `busy_table`, `reason_table`, `monthly_sales`, `members_by_zip`, `add_anchor_zip`, `demand_by_zip` | `test_unit.py -k "table or sales or members or anchor"` |
+| 4 | `make_heatmap`, `make_violin`, `make_trend`, `make_shop_map`, `make_choropleth` | `test_unit.py -k make` |
+| 5 | the *Why they come* and *Where to open next* tabs in `dashboard.py` | `test_pipeline.py -k dashboard` |
+| 6 | *(structure checks go green along the way)* | `test_code.py` |
+| 7 | `reflection.txt` | — |
 
 ### Step 1 — Look before you code
 
@@ -245,18 +244,20 @@ each point gets the `zip` of the polygon it falls in
 for Home and for Work. `zip_centers` finds each ZIP's center — the one place you need a
 **projection**.
 
-### Step 3 — Part 1: features (`features.py`)
+### Step 3 — Read the features (`features.py`, provided)
 
-Merge the orders with the members and the shops, then compute the time of day, the day of
-the week, and three distances: shop to home, shop to work, and the **detour** — how much
-the shop adds to the trip between home and work
+`add_features` merges the orders with the members and the shops, then computes the time
+of day, the day of the week, and three distances: shop to home, shop to work, and the
+**detour** — how much the shop adds to the trip between home and work
 ([Reference #3](#3-how-do-i-measure-distance-and-detour)). A shop right on the way adds
-almost nothing; a shop across town adds a lot.
+almost nothing; a shop across town adds a lot. Read it, and run `code/explore.py` to see
+the columns on real visits: they are what your rules work with.
 
 ### Step 4 — Part 2: the classifier (`classify.py`)
 
-This is the heart of the assignment. Start with the simplest rules you believe — the time
-of day alone, say — and **score them** (`python code/check_score.py`). Then:
+This is the heart of the assignment. `classify.py` starts with a **baseline** that uses only
+the clock. **Score it first** (`python code/check_score.py`): about 76%, and 0% on
+"other" because it never says it. Then:
 
 1. Look at the table. Which reason has the lowest agreement? What is it confused with?
 2. Ask *what would tell those two apart?* Usually it's a place, not a time: a morning visit
@@ -290,7 +291,8 @@ you build on them.
 
 Each function returns the small table one chart needs. `busy_table` and `reason_table` are
 `pivot_table`s; `monthly_sales` is a `groupby` (by shop, or by any column you name, such as `reason`); `members_by_zip` and `demand_by_zip` count
-ZIPs; `site_scores` puts it all together ([About the data](#from-reasons-to-a-place)).
+ZIPs. `site_scores` (provided) puts it all together ([About the data](#from-reasons-to-a-place)) —
+it works once your `zip_centers` and `demand_by_zip` do.
 
 ### Step 7 — Part 3: the charts (`charts.py`)
 
@@ -300,7 +302,9 @@ Figure, or a Folium Map — so the dashboard stays short and the tests can look 
 
 ### Step 8 — Part 4: the dashboard (`dashboard.py`)
 
-Follow the numbered comments in the file. Run it ([Reference #9](#9-how-do-i-run-the-dashboard))
+*When we're busy* and *Where we are* are done — read them; they show the pattern
+(a shop picker, a table from the package, a chart from `charts.py`). Write the other two
+tabs by following the numbered comments. Run it ([Reference #9](#9-how-do-i-run-the-dashboard))
 and read your own charts: Is Armory Square busy when you expect? What does the violin say
 about Westcott on weekends? Then look at the last tab. **Where members live** and **where
 members are when they buy** are different maps. Which one should decide where shop #4 goes?

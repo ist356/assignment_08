@@ -112,7 +112,7 @@ def demand_by_zip(visits: pd.DataFrame) -> pd.DataFrame:
 
 def site_scores(demand: pd.DataFrame, zips: gpd.GeoDataFrame,
                 shops: pd.DataFrame) -> pd.DataFrame:
-    """Score every ZIP as the place for shop #4, best first.
+    """Score every ZIP as the place for shop #4, best first.  *(Provided.)*
 
     `demand` is demand_by_zip's table. Returns one row per ZIP in `zips`:
 
@@ -128,13 +128,27 @@ def site_scores(demand: pd.DataFrame, zips: gpd.GeoDataFrame,
     - `rank`: 1 for the highest score (`score.rank(ascending=False,
       method="first")` as int), sorted by rank.
 
-    How to build it:
-
-    - centers <- zip_centers(zips); merge `demand` on `zip` (how="left") and fill
-      missing visits with 0.
-    - For the nearest shop: merge the centers with our shops using
-      `how="cross"` (every center with every shop), compute haversine_km on the
-      columns, then `groupby("zip")[...].min()`. Same for the rivals.
+    How it works: zip_centers (yours) gives each ZIP's center; a `how="cross"`
+    merge pairs every center with every shop, haversine_km measures each pair, and
+    `groupby("zip")["km"].min()` keeps the nearest. It works once zip_centers and
+    demand_by_zip do.
     """
-    # TODO: your code here
-    pass
+    centers = zip_centers(zips).merge(demand, on="zip", how="left")
+    centers["visits"] = centers["visits"].fillna(0).astype(int)
+
+    def nearest(kind: str) -> pd.Series:
+        spots = shops.loc[shops["kind"] == kind, ["lat", "lon"]]
+        pairs = centers[["zip", "lat", "lon"]].merge(
+            spots.rename(columns={"lat": "s_lat", "lon": "s_lon"}), how="cross")
+        pairs["km"] = haversine_km(pairs["lat"], pairs["lon"],
+                                   pairs["s_lat"], pairs["s_lon"])
+        return pairs.groupby("zip")["km"].min()
+
+    centers["ours_km"] = centers["zip"].map(nearest("ours")).round(2)
+    centers["rival_km"] = centers["zip"].map(nearest("rival")).round(2)
+    centers["served"] = centers["ours_km"] <= SERVED_KM
+    penalty = np.where(centers["rival_km"] <= RIVAL_KM, RIVAL_PENALTY, 1.0)
+    centers["score"] = np.where(centers["served"], 0.0, centers["visits"] * penalty)
+    centers["rank"] = centers["score"].rank(ascending=False, method="first").astype(int)
+    columns = ["zip", "visits", "ours_km", "rival_km", "served", "score", "rank"]
+    return centers.sort_values("rank")[columns].reset_index(drop=True)
