@@ -103,16 +103,30 @@ def test_dashboard_loads():
     assert len(labels) == 4, f"four tabs, got {labels}"
 
 
+def test_dashboard_busy_tab():
+    app = load_app(DASHBOARD, "When we're busy")
+    no_exception(app, DASHBOARD)
+    assert app.get("plotly_chart"), "the monthly trend (Plotly) on When we're busy"
+
+
 def test_dashboard_shows_the_decision():
-    app = load_app(DASHBOARD)
+    app = load_app(DASHBOARD, "Where to open next")
+    no_exception(app, DASHBOARD)
     assert any("13057" in box.value for box in app.success), "a st.success naming the winning ZIP"
-    assert len(app.get("plotly_chart")) >= 4, "the trend and three choropleth maps (Plotly)"
-    assert len(app.metric) == 5, "one metric per reason"
+    assert len(app.get("plotly_chart")) >= 3, "three choropleth maps (Plotly) on Where to open next"
     assert app.dataframe, "the site-score table"
 
 
+def test_dashboard_tabs_are_lazy():
+    app = load_app(DASHBOARD, "Where to open next")
+    assert len(app.tabs) == 4 and app.success, "open on Where to open next, its content shows"
+    assert not app.metric and not any(box.key == "busy_shop" for box in app.selectbox), (
+        "only the open tab should run: st.tabs(..., key='tab', on_change='rerun') and "
+        "`if tab.open:` around each tab")
+
+
 def test_dashboard_shop_picker():
-    app = load_app(DASHBOARD)
+    app = load_app(DASHBOARD, "When we're busy")
     picker = next((box for box in app.selectbox if box.key == "busy_shop"), None)
     assert picker is not None, "a st.selectbox with key='busy_shop' to pick the shop"
     picker.select("Westcott").run()
@@ -120,7 +134,8 @@ def test_dashboard_shop_picker():
 
 
 def test_dashboard_why_shop_picker():
-    app = load_app(DASHBOARD)
+    app = load_app(DASHBOARD, "Why they come")
+    assert len(app.metric) == 5, "one metric per reason"
     picker = next((box for box in app.selectbox if box.key == "why_shop"), None)
     assert picker is not None, "a st.selectbox with key='why_shop' on the Why they come tab"
     picker.select("University Hill").run()
@@ -130,7 +145,7 @@ def test_dashboard_why_shop_picker():
 
 
 def test_dashboard_member_picker():
-    app = load_app(DASHBOARD)
+    app = load_app(DASHBOARD, "Why they come")
     picker = next((box for box in app.selectbox if box.key == "member"), None)
     assert picker is not None, "a st.selectbox with key='member' to follow one member"
     picker.select(picker.options[1]).run()

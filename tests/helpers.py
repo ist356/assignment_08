@@ -103,9 +103,12 @@ def count_kind(fmap: folium.Map, kind: type) -> int:
 # --- Streamlit ----------------------------------------------------------------------
 
 
-def load_app(script: str) -> AppTest:
-    """Load a Streamlit script from the repository and run it once, as opening it would."""
+def load_app(script: str, tab: str | None = None) -> AppTest:
+    """Load a Streamlit script from the repository and run it once, as opening it
+    would — with `tab` open, when the page has lazy st.tabs(key="tab")."""
     app = AppTest.from_file(repo_path(script), default_timeout=120)
+    if tab is not None:
+        app.session_state["tab"] = tab
     app.run()
     return app
 

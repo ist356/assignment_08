@@ -40,10 +40,17 @@ from saltcity import (
 #    shops, zips, customers, orders, visits <- the entries of data
 #    our_shops <- the names of the shops whose kind is "ours"
 #
-# 2. FOUR TABS: st.tabs(["When we're busy", "Why they come", "Where we are",
-#                        "Where to open next"])
+# 2. FOUR TABS: busy, why, where, next_shop <- st.tabs(["When we're busy",
+#    "Why they come", "Where we are", "Where to open next"], key="tab",
+#    on_change="rerun")
+#    on_change="rerun" makes the tabs lazy: only the open tab's code runs, so
+#    changing a picker on one tab never redraws (or misplaces) the other tabs'
+#    charts, and the page is faster. Put each tab's steps under its own
+#        if busy.open:
+#            with busy:
+#                ...
 #
-# 3. WHEN WE'RE BUSY
+# 3. WHEN WE'RE BUSY  (if busy.open: / with busy:)
 #    a. choice <- st.selectbox("Shop", ["All shops"] + our_shops, key="busy_shop")
 #    b. The heatmap: busy_table(orders, the shop — or None for "All shops"), drawn
 #       by make_heatmap with a title naming the choice. Show a matplotlib Figure
@@ -51,7 +58,7 @@ from saltcity import (
 #    c. Two columns: make_trend(monthly_sales(orders)) with st.plotly_chart, and
 #       make_violin(orders) with st.pyplot (and close).
 #
-# 4. WHY THEY COME
+# 4. WHY THEY COME  (if why.open: / with why:)
 #    a. choice <- st.selectbox("Shop", ["All shops"] + our_shops, key="why_shop"),
 #       just like step 3. shown <- the visits at that shop (or all of them).
 #    b. One st.metric per reason, in settings.REASONS order: how many of `shown`
@@ -65,10 +72,10 @@ from saltcity import (
 #                 use_container_width=True, returned_objects=[], key="journey")
 #       (returned_objects=[] means the page does not rerun when someone pans the map.)
 #
-# 5. WHERE WE ARE
+# 5. WHERE WE ARE  (if where.open: / with where:)
 #    st_folium(make_shop_map(shops, orders), ...) the same way, key="shops".
 #
-# 6. WHERE TO OPEN NEXT
+# 6. WHERE TO OPEN NEXT  (if next_shop.open: / with next_shop:)
 #    a. Two columns, two choropleths with the shops on top:
 #       members_by_zip(customers) colored by "members" — "Where members live";
 #       demand_by_zip(visits) colored by "visits" — "Where members are when they buy".
