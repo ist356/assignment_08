@@ -1,13 +1,14 @@
-jupyter
-streamlit
-pandas
-numpy
-matplotlib
 pytest
-
-# project-specific
+pandas
+requests
+python-dotenv
+streamlit>=1.56
+# Unit 6 — maps and charts (matplotlib and seaborn are already in the course image)
+matplotlib
 seaborn
-geopandas[all]
-mapclassify
+plotly>=6
 folium
 streamlit-folium
+geopandas
+# The exact ruff GraderThan grades code style with — `ruff check` here matches the grade.
+ruff==0.16.9

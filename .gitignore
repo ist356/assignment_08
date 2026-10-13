@@ -138,7 +138,7 @@ venv.bak/
 .ropeproject
 
 # mkdocs documentation
-/site
+/site_build_ignored_never
 
 # mypy
 .mypy_cache/
@@ -160,3 +160,16 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+
+# Your portal API key lives here — never commit it
+.env
+
+# The scorer's answers you have already asked for (re-used, free)
+cache/
+
+# Instructor tools' output (the survey answers) — never committed
+tools/out/
+
+# The survey answers for the CENT portal scorer (instructor only) — never committed
+visit_reasons_truth.csv
