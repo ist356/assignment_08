@@ -137,6 +137,7 @@ def site_scores(demand: pd.DataFrame, zips: gpd.GeoDataFrame,
     centers["visits"] = centers["visits"].fillna(0).astype(int)
 
     def nearest(kind: str) -> pd.Series:
+        """km from each ZIP center to the nearest shop of this `kind`, by zip."""
         spots = shops.loc[shops["kind"] == kind, ["lat", "lon"]]
         pairs = centers[["zip", "lat", "lon"]].merge(
             spots.rename(columns={"lat": "s_lat", "lon": "s_lon"}), how="cross")
